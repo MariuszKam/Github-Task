@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 @Service
 public class GitHubService {
 
+    private static final String REPO_API_URL = "https://api.github.com/users/%s/repos";
+    private static final String BRANCH_API_URL = "https://api.github.com/repos/%s/%s/branches";
     private final RestTemplate restTemplate;
 
     public GitHubService(RestTemplate restTemplate) {
@@ -28,11 +30,10 @@ public class GitHubService {
     }
 
     public List<RepoWithBranches> getRepo (String username) {
-        final String userURL = "https://api.github.com/users/" + username + "/repos";
         List<GitRepo> repos;
         try {
             ResponseEntity<List<GitRepo>> response = restTemplate.exchange(
-                    userURL,
+                    String.format(REPO_API_URL, username),
                     HttpMethod.GET,
                     null,
                     new ParameterizedTypeReference<>() {
@@ -47,17 +48,20 @@ public class GitHubService {
                 .collect(Collectors.toList());
 
         List<RepoWithBranches> reposWithBranches = new ArrayList<>();
-        final String reposURL = "https://api.github.com/repos/" + username;
-        for (GitRepo repo:repos
-             ) {
-            ResponseEntity<List<Branch>> branchesResponse = restTemplate.exchange(
-                    reposURL + "/" + repo.name() + "/branches",
-                    HttpMethod.GET,
-                    null,
-                    new ParameterizedTypeReference<>() {}
-            );
-            List<Branch> branches = branchesResponse.getBody();
-            reposWithBranches.add(new RepoWithBranches(repo, branches));
+        try {
+            for (GitRepo repo:repos
+                 ) {
+                ResponseEntity<List<Branch>> branchesResponse = restTemplate.exchange(
+                        String.format(BRANCH_API_URL, username, repo.name()),
+                        HttpMethod.GET,
+                        null,
+                        new ParameterizedTypeReference<>() {}
+                );
+                List<Branch> branches = branchesResponse.getBody();
+                reposWithBranches.add(new RepoWithBranches(repo, branches));
+            }
+        } catch (HttpClientErrorException.NotFound ex) {
+            throw new UserNotFoundException("User with username " + username + " not found.");
         }
         return reposWithBranches;
     }

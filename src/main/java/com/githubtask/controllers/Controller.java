@@ -7,6 +7,7 @@ import com.githubtask.responses.RepoResponse;
 import com.githubtask.models.RepoWithBranches;
 import com.githubtask.service.GitHubService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,7 +26,7 @@ public class Controller {
     @GetMapping("/api/{username}")
     public ResponseEntity<List<RepoResponse>> getRepos(@PathVariable String username,
                                                        @RequestHeader("Accept") String acceptHeader) {
-        if (!"application/json".equalsIgnoreCase(acceptHeader)) {
+        if (!MediaType.APPLICATION_JSON_VALUE.equalsIgnoreCase(acceptHeader)) {
             throw new UnsupportedAcceptHeaderException("The Accept header value " + acceptHeader + " is unsupported.");
         }
         List<RepoWithBranches> reposWithBranches = gitHubService.getRepo(username);
