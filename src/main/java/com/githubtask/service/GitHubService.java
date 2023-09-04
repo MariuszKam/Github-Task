@@ -27,7 +27,7 @@ public class GitHubService {
 
     }
 
-    public List<RepoWithBranches> getRepo (String username, String acceptHeader) {
+    public List<RepoWithBranches> getRepo (String username) {
         final String userURL = "https://api.github.com/users/" + username + "/repos";
         List<GitRepo> repos;
         try {
@@ -35,14 +35,15 @@ public class GitHubService {
                     userURL,
                     HttpMethod.GET,
                     null,
-                    new ParameterizedTypeReference<List<GitRepo>>() {}
+                    new ParameterizedTypeReference<>() {
+                    }
             );
             repos = response.getBody();
         } catch (HttpClientErrorException.NotFound ex) {
             throw new UserNotFoundException("User with username " + username + " not found.");
         }
         repos = repos.stream()
-                .filter(repo -> !repo.isFork())
+                .filter(repo -> !repo.fork())
                 .collect(Collectors.toList());
 
         List<RepoWithBranches> reposWithBranches = new ArrayList<>();
@@ -50,10 +51,10 @@ public class GitHubService {
         for (GitRepo repo:repos
              ) {
             ResponseEntity<List<Branch>> branchesResponse = restTemplate.exchange(
-                    reposURL + "/" + repo.getName() + "/branches",
+                    reposURL + "/" + repo.name() + "/branches",
                     HttpMethod.GET,
                     null,
-                    new ParameterizedTypeReference<List<Branch>>() {}
+                    new ParameterizedTypeReference<>() {}
             );
             List<Branch> branches = branchesResponse.getBody();
             reposWithBranches.add(new RepoWithBranches(repo, branches));

@@ -25,15 +25,15 @@ public class Controller {
     @GetMapping("/api/{username}")
     public ResponseEntity<List<RepoResponse>> getRepos(@PathVariable String username,
                                                        @RequestHeader("Accept") String acceptHeader) {
-        if ("application/xml".equalsIgnoreCase(acceptHeader)) {
-            throw new UnsupportedAcceptHeaderException("Header 'application/xml' is unsupported for the Accept header.");
+        if (!"application/json".equalsIgnoreCase(acceptHeader)) {
+            throw new UnsupportedAcceptHeaderException("Header " + acceptHeader + " is unsupported for the Accept header.");
         }
-        List<RepoWithBranches> reposWithBranches = gitHubService.getRepo(username, acceptHeader);
+        List<RepoWithBranches> reposWithBranches = gitHubService.getRepo(username);
         List<RepoResponse> repoList = reposWithBranches.stream().map(repoWithBranches -> {
-            String repoName = repoWithBranches.getRepo().getName();
-            String ownerLogin = repoWithBranches.getRepo().getOwner().getLogin();
-            List<BranchDetails> branches = repoWithBranches.getBranches().stream()
-                    .map(branch -> new BranchDetails(branch.getName(), branch.getCommit().getSha()))
+            String repoName = repoWithBranches.repo().name();
+            String ownerLogin = repoWithBranches.repo().owner().login();
+            List<BranchDetails> branches = repoWithBranches.branches().stream()
+                    .map(branch -> new BranchDetails(branch.name(), branch.commit().sha()))
                     .collect(Collectors.toList());
 
             return new RepoResponse(repoName, ownerLogin, branches);
