@@ -78,9 +78,9 @@ The API will return error messages and status codes in case of these **two** exc
 "message": "User with username johndoe not found."
 }`
 
-2.  If the provided Accept header is "application/xml", it returns 406 status code:
+2.  If the provided Accept header is not "application/json", it returns 406 status code:
 
 `{
 "status": 406,
-"message": "Header 'application/xml' is unsupported for the Accept header."
+"message": "The Accept header value application/xml is unsupported."
 }`

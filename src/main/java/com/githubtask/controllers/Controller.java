@@ -26,7 +26,7 @@ public class Controller {
     public ResponseEntity<List<RepoResponse>> getRepos(@PathVariable String username,
                                                        @RequestHeader("Accept") String acceptHeader) {
         if (!"application/json".equalsIgnoreCase(acceptHeader)) {
-            throw new UnsupportedAcceptHeaderException("Header " + acceptHeader + " is unsupported for the Accept header.");
+            throw new UnsupportedAcceptHeaderException("The Accept header value " + acceptHeader + " is unsupported.");
         }
         List<RepoWithBranches> reposWithBranches = gitHubService.getRepo(username);
         List<RepoResponse> repoList = reposWithBranches.stream().map(repoWithBranches -> {
